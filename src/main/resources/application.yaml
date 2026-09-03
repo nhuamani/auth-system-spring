@@ -1,3 +1,6 @@
 spring:
   application:
     name: auth-system-spring
+
+  profiles:
+    active: dev

@@ -1,0 +1,10 @@
+-- Docker
+docker run --rm -d --name mysql-container -e MYSQL_ROOT_PASSWORD=123456 -e MYSQL_DATABASE=auth_system -p 3306:3306 -v C:\docker\mysql\data:/var/lib/mysql-auth mysql:8.4
+
+-- docker logs mysql-container
+
+-- docker exec -it mysql-container mysql -uroot -p -e "SHOW DATABASES;"
+
+
+Execute Maven
+.\mvnw.cmd spring-boot:run
