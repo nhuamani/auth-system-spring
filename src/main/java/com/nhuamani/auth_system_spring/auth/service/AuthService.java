@@ -10,10 +10,14 @@ import com.nhuamani.auth_system_spring.auth.exception.EmailAlreadyExistsExceptio
 import com.nhuamani.auth_system_spring.auth.exception.RoleNotFoundException;
 import com.nhuamani.auth_system_spring.auth.repository.RoleRepository;
 import com.nhuamani.auth_system_spring.auth.repository.UserRepository;
+import com.nhuamani.auth_system_spring.auth.security.JwtService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +30,7 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
@@ -79,15 +84,24 @@ public class AuthService {
                         )
                 );
 
-        User user = userRepository
-                .findByEmail(authentication.getName())
-                .orElseThrow();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(
+                                "Usuario no encontrado"
+                        )
+                );
+
+        String accessToken = jwtService.generateToken(
+                (UserDetails) authentication.getPrincipal()
+        );
 
         return new AuthResponse(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRole().getName()
+                user.getRole().getName(),
+                accessToken,
+                "Bearer"
         );
     }
 }
