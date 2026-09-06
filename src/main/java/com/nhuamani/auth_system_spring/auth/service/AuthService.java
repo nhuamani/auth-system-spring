@@ -1,5 +1,7 @@
 package com.nhuamani.auth_system_spring.auth.service;
 
+import com.nhuamani.auth_system_spring.auth.dto.auth.AuthResponse;
+import com.nhuamani.auth_system_spring.auth.dto.auth.LoginRequest;
 import com.nhuamani.auth_system_spring.auth.dto.auth.RegisterRequest;
 import com.nhuamani.auth_system_spring.auth.dto.auth.RegisterResponse;
 import com.nhuamani.auth_system_spring.auth.entity.Role;
@@ -9,6 +11,9 @@ import com.nhuamani.auth_system_spring.auth.exception.RoleNotFoundException;
 import com.nhuamani.auth_system_spring.auth.repository.RoleRepository;
 import com.nhuamani.auth_system_spring.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +25,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
@@ -56,6 +62,32 @@ public class AuthService {
                 savedUser.getName(),
                 savedUser.getEmail(),
                 savedUser.getRole().getName()
+        );
+    }
+
+    public AuthResponse login(LoginRequest request) {
+
+        String email = request.email()
+                .trim()
+                .toLowerCase();
+
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                email,
+                                request.password()
+                        )
+                );
+
+        User user = userRepository
+                .findByEmail(authentication.getName())
+                .orElseThrow();
+
+        return new AuthResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().getName()
         );
     }
 }
