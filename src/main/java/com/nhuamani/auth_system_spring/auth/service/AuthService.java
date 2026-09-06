@@ -11,6 +11,10 @@ import com.nhuamani.auth_system_spring.auth.exception.RoleNotFoundException;
 import com.nhuamani.auth_system_spring.auth.repository.RoleRepository;
 import com.nhuamani.auth_system_spring.auth.repository.UserRepository;
 import com.nhuamani.auth_system_spring.auth.security.JwtService;
+import com.nhuamani.auth_system_spring.auth.security.RefreshTokenService;
+import com.nhuamani.auth_system_spring.auth.dto.RefreshTokenResponse;
+import com.nhuamani.auth_system_spring.auth.entity.RefreshToken;
+import com.nhuamani.auth_system_spring.auth.security.CustomUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +35,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
+    private final CustomUserDetailsService userDetailsService;
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
@@ -95,12 +101,34 @@ public class AuthService {
                 (UserDetails) authentication.getPrincipal()
         );
 
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+
         return new AuthResponse(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
                 user.getRole().getName(),
                 accessToken,
+                refreshToken.getToken(),
+                "Bearer"
+        );
+    }
+
+    public RefreshTokenResponse refreshToken(String token) {
+
+        RefreshToken refreshToken = refreshTokenService.findByToken(token);
+
+        refreshTokenService.verifyExpiration(refreshToken);
+
+        User user = refreshToken.getUser();
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+
+        String accessToken = jwtService.generateToken(userDetails);
+
+        return new RefreshTokenResponse(
+                accessToken,
+                refreshToken.getToken(),
                 "Bearer"
         );
     }

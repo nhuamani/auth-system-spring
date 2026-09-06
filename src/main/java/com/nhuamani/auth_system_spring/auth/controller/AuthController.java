@@ -5,6 +5,8 @@ import com.nhuamani.auth_system_spring.auth.dto.auth.LoginRequest;
 import com.nhuamani.auth_system_spring.auth.dto.auth.RegisterRequest;
 import com.nhuamani.auth_system_spring.auth.dto.auth.RegisterResponse;
 import com.nhuamani.auth_system_spring.auth.service.AuthService;
+import com.nhuamani.auth_system_spring.auth.dto.RefreshTokenRequest;
+import com.nhuamani.auth_system_spring.auth.dto.RefreshTokenResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,9 +38,18 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request
     ) {
 
-        AuthResponse response =
-                authService.login(request);
+        AuthResponse response = authService.login(request);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<RefreshTokenResponse> refreshToken(
+            @Valid @RequestBody RefreshTokenRequest request
+    ) {
+
+        return ResponseEntity.ok(
+                authService.refreshToken(request.refreshToken())
+        );
     }
 }
