@@ -29,32 +29,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
 
-        // No existe Authorization
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Extraemos el JWT
-        final String jwt = authHeader.substring(7);
+        String jwt = authHeader.substring(7);
 
         try {
 
-            // Extraemos el email del JWT
-            final String username = jwtService.extractUsername(jwt);
+            String username = jwtService.extractUsername(jwt);
 
-            // Todavía no existe autenticación
             if (username != null
                     && SecurityContextHolder.getContext()
                     .getAuthentication() == null) {
 
-                // Buscamos el usuario
                 UserDetails userDetails =
                         userDetailsService.loadUserByUsername(username);
 
-                // Validamos el JWT
                 if (jwtService.isTokenValid(jwt, userDetails)) {
 
                     UsernamePasswordAuthenticationToken authentication =
@@ -69,7 +63,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     .buildDetails(request)
                     );
 
-                    // Registramos la autenticación
                     SecurityContextHolder.getContext()
                             .setAuthentication(authentication);
                 }
@@ -77,8 +70,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (Exception exception) {
 
-            // El token es inválido o está expirado.
-            // No autenticamos al usuario.
             SecurityContextHolder.clearContext();
         }
 

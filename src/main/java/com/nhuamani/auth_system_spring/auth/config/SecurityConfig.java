@@ -1,6 +1,8 @@
 package com.nhuamani.auth_system_spring.auth.config;
 
 import com.nhuamani.auth_system_spring.auth.security.CustomUserDetailsService;
+import com.nhuamani.auth_system_spring.auth.security.JwtAccessDeniedHandler;
+import com.nhuamani.auth_system_spring.auth.security.JwtAuthenticationEntryPoint;
 import com.nhuamani.auth_system_spring.auth.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,8 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final JwtAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http)
@@ -40,9 +44,19 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .authenticationProvider(authenticationProvider(passwordEncoder()))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .authenticationProvider(
+                        authenticationProvider(passwordEncoder())
+                )
 
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
+
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
         return http.build();
     }
 
