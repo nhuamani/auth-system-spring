@@ -115,13 +115,12 @@ public class AuthService {
         );
     }
 
+    @Transactional
     public RefreshTokenResponse refreshToken(String token) {
 
-        RefreshToken refreshToken = refreshTokenService.findByToken(token);
+        RefreshToken newRefreshToken = refreshTokenService.rotateRefreshToken(token);
 
-        refreshTokenService.verifyExpiration(refreshToken);
-
-        User user = refreshToken.getUser();
+        User user = newRefreshToken.getUser();
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 
@@ -129,7 +128,7 @@ public class AuthService {
 
         return new RefreshTokenResponse(
                 accessToken,
-                refreshToken.getToken(),
+                newRefreshToken.getToken(),
                 "Bearer"
         );
     }

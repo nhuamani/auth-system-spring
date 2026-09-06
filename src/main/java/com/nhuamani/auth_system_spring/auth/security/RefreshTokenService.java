@@ -25,8 +25,12 @@ public class RefreshTokenService {
     @Transactional
     public RefreshToken createRefreshToken(User user) {
 
-        // Eliminar el refresh token anterior
         refreshTokenRepository.deleteByUser(user);
+
+        return generateRefreshToken(user);
+    }
+
+    private RefreshToken generateRefreshToken(User user) {
 
         byte[] randomBytes = new byte[64];
         secureRandom.nextBytes(randomBytes);
@@ -48,6 +52,7 @@ public class RefreshTokenService {
     }
 
     public RefreshToken findByToken(String token) {
+
         return refreshTokenRepository.findByToken(token)
                 .orElseThrow(() ->
                         new RefreshTokenNotFoundException(
@@ -57,16 +62,29 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public RefreshToken verifyExpiration(RefreshToken refreshToken) {
+    public RefreshToken rotateRefreshToken(String token) {
+
+        RefreshToken currentToken = findByToken(token);
+        verifyExpiration(currentToken);
+        User user = currentToken.getUser();
+
+        // Revocar el token utilizado
+        refreshTokenRepository.delete(currentToken);
+
+        // Crear un nuevo refresh token
+        return generateRefreshToken(user);
+    }
+
+    private void verifyExpiration(RefreshToken refreshToken) {
 
         if (refreshToken.getExpiresAt().isBefore(LocalDateTime.now())) {
 
             refreshTokenRepository.delete(refreshToken);
 
-            throw new RefreshTokenNotFoundException("Refresh token expirado");
+            throw new RefreshTokenNotFoundException(
+                    "Refresh token expirado"
+            );
         }
-
-        return refreshToken;
     }
 
     @Transactional
