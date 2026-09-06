@@ -76,6 +76,7 @@ public class AuthService {
         );
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
 
         String email = request.email()
@@ -131,5 +132,10 @@ public class AuthService {
                 refreshToken.getToken(),
                 "Bearer"
         );
+    }
+
+    public void logout(String refreshToken) {
+
+        refreshTokenService.revokeToken(refreshToken);
     }
 }

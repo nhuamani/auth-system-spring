@@ -26,6 +26,7 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final JwtAccessDeniedHandler accessDeniedHandler;
 
@@ -44,17 +45,20 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/register",
                                 "/api/auth/login",
-                                "/api/auth/refresh"
+                                "/api/auth/refresh",
+                                "/api/auth/logout"
                         ).permitAll()
+                        // ENDPOINT DE ERROR
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
-                .authenticationProvider(
-                        authenticationProvider(passwordEncoder())
-                )
-
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
+                )
+
+                .authenticationProvider(
+                        authenticationProvider(passwordEncoder())
                 )
 
                 .addFilterBefore(
@@ -74,9 +78,7 @@ public class SecurityConfig {
             PasswordEncoder passwordEncoder
     ) {
 
-        DaoAuthenticationProvider provider =
-                new DaoAuthenticationProvider(userDetailsService);
-
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
 
         return provider;

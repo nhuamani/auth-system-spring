@@ -3,9 +3,11 @@ package com.nhuamani.auth_system_spring.auth.security;
 import com.nhuamani.auth_system_spring.auth.entity.RefreshToken;
 import com.nhuamani.auth_system_spring.auth.entity.User;
 import com.nhuamani.auth_system_spring.auth.repository.RefreshTokenRepository;
+import com.nhuamani.auth_system_spring.auth.exception.RefreshTokenNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -16,12 +18,11 @@ import java.util.Base64;
 public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
-
     @Value("${jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
-
     private final SecureRandom secureRandom = new SecureRandom();
 
+    @Transactional
     public RefreshToken createRefreshToken(User user) {
 
         // Eliminar el refresh token anterior
@@ -47,26 +48,31 @@ public class RefreshTokenService {
     }
 
     public RefreshToken findByToken(String token) {
-
         return refreshTokenRepository.findByToken(token)
                 .orElseThrow(() ->
-                        new RuntimeException("Refresh token no encontrado")
+                        new RefreshTokenNotFoundException(
+                                "Refresh token inválido o revocado"
+                        )
                 );
     }
 
+    @Transactional
     public RefreshToken verifyExpiration(RefreshToken refreshToken) {
 
         if (refreshToken.getExpiresAt().isBefore(LocalDateTime.now())) {
 
             refreshTokenRepository.delete(refreshToken);
 
-            throw new RuntimeException("Refresh token expirado");
+            throw new RefreshTokenNotFoundException("Refresh token expirado");
         }
 
         return refreshToken;
     }
 
-    public void deleteByToken(String token) {
-        refreshTokenRepository.deleteByToken(token);
+    @Transactional
+    public void revokeToken(String token) {
+
+        refreshTokenRepository.findByToken(token)
+                .ifPresent(refreshTokenRepository::delete);
     }
 }

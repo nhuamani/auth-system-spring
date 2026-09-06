@@ -1,6 +1,5 @@
 package com.nhuamani.auth_system_spring.auth.exception;
 
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,7 +17,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleEmailExists(
             EmailAlreadyExistsException ex
     ) {
-
         return buildResponse(
                 HttpStatus.CONFLICT,
                 ex.getMessage()
@@ -29,7 +27,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleRoleNotFound(
             RoleNotFoundException ex
     ) {
-
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 ex.getMessage()
@@ -62,6 +59,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .badRequest()
                 .body(body);
+    }
+
+    @ExceptionHandler(RefreshTokenNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleRefreshTokenNotFound(
+            RefreshTokenNotFoundException ex
+    ) {
+
+        return buildResponse(
+                HttpStatus.UNAUTHORIZED,
+                ex.getMessage()
+        );
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(

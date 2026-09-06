@@ -7,6 +7,7 @@ import com.nhuamani.auth_system_spring.auth.dto.auth.RegisterResponse;
 import com.nhuamani.auth_system_spring.auth.service.AuthService;
 import com.nhuamani.auth_system_spring.auth.dto.RefreshTokenRequest;
 import com.nhuamani.auth_system_spring.auth.dto.RefreshTokenResponse;
+import com.nhuamani.auth_system_spring.auth.dto.auth.LogoutRequest;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,16 @@ public class AuthController {
         AuthResponse response = authService.login(request);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @Valid @RequestBody LogoutRequest request
+    ) {
+
+        authService.logout(request.refreshToken());
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/refresh")
