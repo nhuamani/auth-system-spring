@@ -6,15 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-        name = "users",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_user_email",
-                        columnNames = "email"
-                )
-        }
-)
+@Table(name = "users", uniqueConstraints = {@UniqueConstraint(name = "uk_user_email", columnNames = "email")})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -46,13 +38,7 @@ public class User {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "role_id",
-            nullable = false,
-            foreignKey = @ForeignKey(
-                    name = "fk_users_role"
-            )
-    )
+    @JoinColumn(name = "role_id", nullable = false, foreignKey = @ForeignKey(name = "fk_users_role"))
     private Role role;
 
     @PrePersist

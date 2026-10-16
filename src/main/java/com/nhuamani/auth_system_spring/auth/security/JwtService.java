@@ -26,7 +26,7 @@ public class JwtService {
         this.accessTokenExpiration = accessTokenExpiration;
     }
 
-     // Genera un Access Token JWT para el usuario autenticado.
+    // Genera un Access Token JWT para el usuario autenticado.
     public String generateToken(UserDetails userDetails) {
 
         Date issuedAt = new Date();
@@ -47,7 +47,7 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-     // Extrae un Claim específico.
+    // Extrae un Claim específico.
     public <T> T extractClaim(
             String token,
             Function<Claims, T> claimsResolver
@@ -56,7 +56,7 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-     // Valida que el token pertenezca al usuario y que no haya expirado.
+    // Valida que el token pertenezca al usuario y que no haya expirado.
     public boolean isTokenValid(
             String token,
             UserDetails userDetails
@@ -68,7 +68,7 @@ public class JwtService {
                 && !isTokenExpired(token);
     }
 
-     // Comprueba si el JWT está expirado.
+    // Comprueba si el JWT está expirado.
     private boolean isTokenExpired(String token) {
 
         Date expiration = extractClaim(
@@ -79,7 +79,7 @@ public class JwtService {
         return expiration.before(new Date());
     }
 
-     // Obtiene todos los Claims del JWT.
+    // Obtiene todos los Claims del JWT.
     private Claims extractAllClaims(String token) {
 
         return Jwts.parser()
@@ -89,7 +89,7 @@ public class JwtService {
                 .getPayload();
     }
 
-     // Construye la clave utilizada para firmar/verificar el JWT.
+    // Construye la clave utilizada para firmar/verificar el JWT.
     private SecretKey getSigningKey() {
 
         byte[] keyBytes = Decoders.BASE64.decode(secret);
